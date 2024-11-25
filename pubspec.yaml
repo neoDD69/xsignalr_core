@@ -1,7 +1,7 @@
-name: signalr_core
+name: xsignalr_core
 description: ASP.NET Core SignalR Client written for Dart that is platform-independent, and can be used on both the command-line and the browser.
 version: 1.1.2
-homepage: https://github.com/jamiewest/signalr_core
+homepage: https://github.com/neoDD69/xsignalr_core
 
 environment:
   sdk: ^3.2.6
