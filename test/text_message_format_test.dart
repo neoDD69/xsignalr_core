@@ -1,4 +1,5 @@
-import 'package:signalr_core/src/text_message_format.dart';
+import 'package:xsignalr_core/signalr_core.dart';
+
 import 'package:test/test.dart';
 
 const Map<String, List<String>> messages = {

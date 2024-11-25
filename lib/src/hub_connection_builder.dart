@@ -1,4 +1,4 @@
-import 'package:signalr_core/signalr_core.dart';
+import '../../signalr_core.dart';
 
 /// A builder for configuring [HubConnection] instances.
 class HubConnectionBuilder {
@@ -35,8 +35,7 @@ class HubConnectionBuilder {
   /// Configures the [HubConnection] to automatically attempt to reconnect if
   /// the connection is lost.
   // ignore: avoid_returning_this
-  HubConnectionBuilder withAutomaticReconnect(
-      [dynamic retryDelaysOrReconnectPolicy]) {
+  HubConnectionBuilder withAutomaticReconnect([dynamic retryDelaysOrReconnectPolicy]) {
     if (reconnectPolicy != null) {
       throw Exception('A reconnectPolicy has already been set.');
     }
@@ -65,17 +64,13 @@ class HubConnectionBuilder {
       );
     }
 
-    _httpConnectionOptions ??=
-        HttpConnectionOptions(transport: _httpTransportType);
+    _httpConnectionOptions ??= HttpConnectionOptions(transport: _httpTransportType);
 
-    final connection =
-        HttpConnection(url: _url, options: _httpConnectionOptions!);
+    final connection = HttpConnection(url: _url, options: _httpConnectionOptions!);
 
     return HubConnection(
       connection: connection,
-      logging: (_httpConnectionOptions!.logging != null)
-          ? _httpConnectionOptions!.logging
-          : (l, m) => {},
+      logging: (_httpConnectionOptions!.logging != null) ? _httpConnectionOptions!.logging : (l, m) => {},
       protocol: (_protocol == null) ? JsonHubProtocol() : _protocol!,
       reconnectPolicy: reconnectPolicy,
     );

@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:http/http.dart';
-import 'package:signalr_core/src/logger.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/utils.dart';
+// import 'package:signalr_core/src/logger.dart';
+// import 'package:signalr_core/src/transport.dart';
+// import 'package:signalr_core/src/utils.dart';
 import 'package:sse_channel/sse_channel.dart';
+
+import '../../signalr_core.dart';
 
 class ServerSentEventsTransport implements Transport {
   final BaseClient? _client;
@@ -96,8 +98,7 @@ class ServerSentEventsTransport implements Transport {
   @override
   Future<void> send(data) async {
     if (_sseChannel == null) {
-      return Future.error(
-          Exception('Cannot send until the transport is connected'));
+      return Future.error(Exception('Cannot send until the transport is connected'));
     }
     return sendMessage(
       _log!,

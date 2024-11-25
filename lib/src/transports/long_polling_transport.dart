@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:http/http.dart';
-import 'package:signalr_core/signalr_core.dart';
+
+import '../../signalr_core.dart';
+// import 'package:signalr_core/signalr_core.dart';
 
 class LongPollingTransport implements Transport {
   final BaseClient? _client;
@@ -94,10 +96,8 @@ class LongPollingTransport implements Transport {
         }
 
         final pollUrl = '$url&_=${DateTime.now().millisecondsSinceEpoch}';
-        _log?.call(
-            LogLevel.trace, '(LongPolling transport) polling: $pollUrl.');
-        final response =
-            await _client!.get(Uri.parse(pollUrl), headers: headers).timeout(
+        _log?.call(LogLevel.trace, '(LongPolling transport) polling: $pollUrl.');
+        final response = await _client!.get(Uri.parse(pollUrl), headers: headers).timeout(
           const Duration(milliseconds: 100000),
           onTimeout: () {
             _log?.call(LogLevel.warning, 'Timeout from HTTP request.');
@@ -106,8 +106,7 @@ class LongPollingTransport implements Transport {
         );
 
         if (response.statusCode == 204) {
-          _log?.call(LogLevel.information,
-              '(LongPolling transport) Poll terminated by server.');
+          _log?.call(LogLevel.information, '(LongPolling transport) Poll terminated by server.');
 
           _running = false;
         } else if (response.statusCode != 200) {
@@ -134,21 +133,18 @@ class LongPollingTransport implements Transport {
             }
           } else {
             // This is another way timeout manifest.
-            _log?.call(LogLevel.trace,
-                '(LongPolling transport) Poll timed out, reissuing.');
+            _log?.call(LogLevel.trace, '(LongPolling transport) Poll timed out, reissuing.');
           }
         }
       }
     } catch (e) {
       if (!_running) {
         // Log but disregard errors that occur after stopping
-        _log?.call(LogLevel.trace,
-            '(LongPolling transport) Poll errored after shutdown: $e');
+        _log?.call(LogLevel.trace, '(LongPolling transport) Poll errored after shutdown: $e');
       } else {
         if (e is TimeoutException) {
           // Ignore timeouts and reissue the poll.
-          _log?.call(LogLevel.trace,
-              '(LongPolling transport) Poll timed out, reissuing.');
+          _log?.call(LogLevel.trace, '(LongPolling transport) Poll timed out, reissuing.');
         } else {
           // Close the connection with the error as the result.
           _closeError = e as Exception;
@@ -171,8 +167,7 @@ class LongPollingTransport implements Transport {
   @override
   Future<void> send(data) async {
     if (!_running) {
-      return Future.error(
-          Exception('Cannot send until the transport is connected'));
+      return Future.error(Exception('Cannot send until the transport is connected'));
     }
     return sendMessage(
       _log,
@@ -199,8 +194,7 @@ class LongPollingTransport implements Transport {
       await _receiving;
 
       // Send DELETE to clean up long polling on the server
-      _log?.call(LogLevel.trace,
-          '(LongPolling transport) sending DELETE request to $_url.');
+      _log?.call(LogLevel.trace, '(LongPolling transport) sending DELETE request to $_url.');
 
       final headers = <String, String>{};
       final userAgentHeader = getUserAgentHeader();
@@ -213,8 +207,7 @@ class LongPollingTransport implements Transport {
 
       await _client!.delete(Uri.parse(_url!), headers: headers);
 
-      _log?.call(
-          LogLevel.trace, '(LongPolling transport) DELETE request sent.');
+      _log?.call(LogLevel.trace, '(LongPolling transport) DELETE request sent.');
     } finally {
       _log?.call(LogLevel.trace, '(LongPolling transport) Stop finished.');
 

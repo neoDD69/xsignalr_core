@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/utils.dart';
+import '../../signalr_core.dart';
 
 /// Defines the type of a Hub Message.
 enum MessageType {
@@ -115,8 +114,7 @@ class StreamInvocationMessage extends HubInvocationMessage {
 /// A hub message representing a single item produced as part of a result
 /// stream.
 class StreamItemMessage extends HubInvocationMessage {
-  StreamItemMessage({this.item, super.headers, super.invocationId})
-      : super(type: MessageType.streamItem);
+  StreamItemMessage({this.item, super.headers, super.invocationId}) : super(type: MessageType.streamItem);
 
   /// The item produced by the server.
   final dynamic item;
@@ -124,9 +122,7 @@ class StreamItemMessage extends HubInvocationMessage {
 
 /// A hub message representing the result of an invocation.
 class CompletionMessage extends HubInvocationMessage with EquatableMixin {
-  CompletionMessage(
-      {this.error, this.result, super.headers, super.invocationId})
-      : super(type: MessageType.completion);
+  CompletionMessage({this.error, this.result, super.headers, super.invocationId}) : super(type: MessageType.completion);
 
   /// The error produced by the invocation, if any.
   ///
@@ -167,8 +163,7 @@ class CloseMessage extends HubMessage {
 
 /// A hub message sent to request that a streaming invocation be canceled.
 class CancelInvocationMessage extends HubInvocationMessage {
-  CancelInvocationMessage({super.headers, super.invocationId})
-      : super(type: MessageType.cancelInvocation);
+  CancelInvocationMessage({super.headers, super.invocationId}) : super(type: MessageType.cancelInvocation);
 }
 
 /// A protocol abstraction for communicating with SignalR Hubs.

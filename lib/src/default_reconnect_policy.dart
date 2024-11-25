@@ -1,4 +1,4 @@
-import 'package:signalr_core/src/retry_policy.dart';
+import '../../signalr_core.dart';
 
 const defaultRetryDelaysInMilliseconds = [0, 2000, 10000, 30000, null];
 

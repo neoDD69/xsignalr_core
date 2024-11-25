@@ -1,19 +1,10 @@
 import 'package:http/http.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/utils.dart';
+import '../../signalr_core.dart';
 
 /// Options provided to the 'withUrl' factory constructor on [HubConnection]
 /// to configure options for the HTTP-based transports.
 class HttpConnectionOptions {
-  HttpConnectionOptions(
-      {this.client,
-      this.transport,
-      this.logging,
-      this.accessTokenFactory,
-      this.logMessageContent = false,
-      this.skipNegotiation = false,
-      this.withCredentials = true,
-      this.customHeaders});
+  HttpConnectionOptions({this.client, this.transport, this.logging, this.accessTokenFactory, this.logMessageContent = false, this.skipNegotiation = false, this.withCredentials = true, this.customHeaders});
 
   /// An [BaseClient] that will be used to make HTTP requests.
   final BaseClient? client;

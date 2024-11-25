@@ -3,14 +3,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
-import 'package:signalr_core/src/connection.dart';
-import 'package:signalr_core/src/http_connection_options.dart';
-import 'package:signalr_core/src/logger.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/transports/long_polling_transport.dart';
-import 'package:signalr_core/src/transports/server_sent_events_transport.dart';
-import 'package:signalr_core/src/transports/web_socket_transport.dart';
-import 'package:signalr_core/src/utils.dart';
+import 'package:xsignalr_core/src/transports/long_polling_transport.dart';
+import 'package:xsignalr_core/src/transports/server_sent_events_transport.dart';
+import 'package:xsignalr_core/src/transports/web_socket_transport.dart';
+import '../../signalr_core.dart';
 
 enum ConnectionState {
   connecting,
@@ -68,22 +64,13 @@ class AvailableTransport {
 extension AvailableTransportExtensions on AvailableTransport {
   static AvailableTransport fromJson(Map<String, dynamic> json) {
     return AvailableTransport(
-      transport:
-          HttpTransportTypeExtensions.fromName(json['transport'] as String?),
-      transferFormats: List<dynamic>.from(
-              json['transferFormats'] as Iterable<dynamic>)
-          .map((value) => TransferFormatExtensions.fromName(value as String))
-          .toList(),
+      transport: HttpTransportTypeExtensions.fromName(json['transport'] as String?),
+      transferFormats: List<dynamic>.from(json['transferFormats'] as Iterable<dynamic>).map((value) => TransferFormatExtensions.fromName(value as String)).toList(),
     );
   }
 
   static List<AvailableTransport> listFromJson(List<dynamic>? json) {
-    return json == null
-        ? <AvailableTransport>[]
-        : json
-            .map((value) => AvailableTransportExtensions.fromJson(
-                value as Map<String, dynamic>))
-            .toList();
+    return json == null ? <AvailableTransport>[] : json.map((value) => AvailableTransportExtensions.fromJson(value as Map<String, dynamic>)).toList();
   }
 }
 
@@ -120,9 +107,7 @@ class HttpConnection implements Connection {
     required String? url,
     required HttpConnectionOptions options,
   })  : baseUrl = url,
-        _client = (options.client != null)
-            ? options.client
-            : http.Client() as http.BaseClient,
+        _client = (options.client != null) ? options.client : http.Client() as http.BaseClient,
         _options = options {
     _logging = (options.logging != null) ? options.logging : (l, m) => {};
     _connectionState = ConnectionState.disconnected;
@@ -159,8 +144,7 @@ class HttpConnection implements Connection {
     if (_connectionState == ConnectionState.disconnecting) {
       // stop() was called and transitioned the client into the Disconnecting
       // state.
-      const message =
-          'Failed to start the HttpConnection before stop() was called.';
+      const message = 'Failed to start the HttpConnection before stop() was called.';
       _logging!(LogLevel.error, message);
 
       // We cannot await stopPromise inside startInternal since stopInternal
@@ -171,8 +155,7 @@ class HttpConnection implements Connection {
     } else if (_connectionState as dynamic != ConnectionState.connected) {
       // stop() was called and transitioned the client into the Disconnecting
       // state.
-      const message =
-          'HttpConnection.startInternal completed gracefully but didn\'t '
+      const message = 'HttpConnection.startInternal completed gracefully but didn\'t '
           'enter the connection into the connected state!';
       _logging!(LogLevel.error, message);
       return Future.error(Exception(message));
@@ -260,8 +243,7 @@ class HttpConnection implements Connection {
       try {
         await _transport!.stop();
       } catch (e) {
-        _logging!(LogLevel.error,
-            'HttpConnection.transport.stop() threw error \'${e.toString()}\'.');
+        _logging!(LogLevel.error, 'HttpConnection.transport.stop() threw error \'${e.toString()}\'.');
         _stopConnection();
       }
 
@@ -321,15 +303,13 @@ class HttpConnection implements Connection {
     }
 
     if (_exception != null) {
-      _logging!(LogLevel.error,
-          'Connection disconnected with error \'${_exception.toString()}\'.');
+      _logging!(LogLevel.error, 'Connection disconnected with error \'${_exception.toString()}\'.');
     } else {
       _logging!(LogLevel.information, 'Connection disconnected.');
     }
 
     if (_sendQueue != null) {
-      _sendQueue!.stop()!.catchError((e) => _logging!(LogLevel.error,
-          'TransportSendQueue.stop() threw error \'${e.toString()}\'.'));
+      _sendQueue!.stop()!.catchError((e) => _logging!(LogLevel.error, 'TransportSendQueue.stop() threw error \'${e.toString()}\'.'));
       _sendQueue = null;
     }
 
@@ -379,8 +359,7 @@ class HttpConnection implements Connection {
         do {
           negotiateResponse = await _getNegotiationResponse(url!);
           // the user tries to stop the connection when it is being started
-          if (_connectionState == ConnectionState.disconnecting ||
-              _connectionState == ConnectionState.disconnected) {
+          if (_connectionState == ConnectionState.disconnecting || _connectionState == ConnectionState.disconnected) {
             throw Exception('The connection was stopped during negotiation.');
           }
 
@@ -413,8 +392,7 @@ class HttpConnection implements Connection {
           throw Exception('Negotiate redirection limit exceeded.');
         }
 
-        await _createTransport(
-            url, _options.transport, negotiateResponse, transferFormat);
+        await _createTransport(url, _options.transport, negotiateResponse, transferFormat);
       }
 
       // TODO: Figure out how to check for dynamic properties.
@@ -466,8 +444,7 @@ class HttpConnection implements Connection {
     headers['Content-Type'] = 'text/plain;charset=UTF-8';
 
     try {
-      final response = await _client!.post(Uri.parse(negotiateUrl),
-          headers: Map<String, String>.from(headers));
+      final response = await _client!.post(Uri.parse(negotiateUrl), headers: Map<String, String>.from(headers));
 
       if (response.statusCode != 200) {
         return Future.error(Exception(
@@ -476,11 +453,9 @@ class HttpConnection implements Connection {
         ));
       }
 
-      final negotiateResponse = NegotiateResponseExtensions.fromJson(
-          json.decode(response.body) as Map<String, dynamic>);
+      final negotiateResponse = NegotiateResponseExtensions.fromJson(json.decode(response.body) as Map<String, dynamic>);
 
-      if ((negotiateResponse.negotiateVersion != null) &&
-          negotiateResponse.negotiateVersion! < 1) {
+      if ((negotiateResponse.negotiateVersion != null) && negotiateResponse.negotiateVersion! < 1) {
         negotiateResponse.connectionToken = negotiateResponse.connectionId;
       }
 
@@ -490,8 +465,7 @@ class HttpConnection implements Connection {
 
       return negotiateResponse;
     } catch (e) {
-      _logging!(
-          LogLevel.error, 'Failed to complete negotiation with the server: $e');
+      _logging!(LogLevel.error, 'Failed to complete negotiation with the server: $e');
       return Future.error(e);
     }
   }
@@ -541,11 +515,7 @@ class HttpConnection implements Connection {
     ).toString();
   }
 
-  Future<void> _createTransport(
-      String? url,
-      dynamic requestedTransport,
-      NegotiateResponse negotiateResponse,
-      TransferFormat? requestedTransferFormat) async {
+  Future<void> _createTransport(String? url, dynamic requestedTransport, NegotiateResponse negotiateResponse, TransferFormat? requestedTransferFormat) async {
     var connectUrl = _createConnectUrl(url, negotiateResponse.connectionToken);
     if (requestedTransport is Transport) {
       _logging!(
@@ -554,8 +524,7 @@ class HttpConnection implements Connection {
         'using that directly.',
       );
       _transport = requestedTransport;
-      await _startTransport(
-          url: connectUrl, transferFormat: requestedTransferFormat);
+      await _startTransport(url: connectUrl, transferFormat: requestedTransferFormat);
 
       connectionId = negotiateResponse.connectionId;
       return Future.value(null);
@@ -602,12 +571,10 @@ class HttpConnection implements Connection {
             '${e.toString()}',
           );
           negotiate = null;
-          transportExceptions
-              .add(Exception('${endpoint.transport} failed: ${e.toString()}'));
+          transportExceptions.add(Exception('${endpoint.transport} failed: ${e.toString()}'));
 
           if (_connectionState != ConnectionState.connecting) {
-            const message =
-                'Failed to select transport before stop() was called.';
+            const message = 'Failed to select transport before stop() was called.';
             _logging!(LogLevel.debug, message);
             return Future.error(Exception(message));
           }
@@ -636,8 +603,7 @@ class HttpConnection implements Connection {
       if (_transportMatches(requestedTransport, transport)) {
         final transferFormats = endpoint.transferFormats!;
         if (transferFormats.contains(requestedTransferFormat)) {
-          _logging!(LogLevel.debug,
-              'Selecting transport \'${transport.toString()}\'.');
+          _logging!(LogLevel.debug, 'Selecting transport \'${transport.toString()}\'.');
           try {
             return _constructTransport(transport);
           } catch (e) {
@@ -661,8 +627,7 @@ class HttpConnection implements Connection {
           'Skipping transport \'${transport.toString()}\' because '
           'it was disabled by the client.',
         );
-        return Exception(
-            '\'${transport.toString()}\' is disabled by the client.');
+        return Exception('\'${transport.toString()}\' is disabled by the client.');
       }
     }
   }
@@ -683,23 +648,11 @@ class HttpConnection implements Connection {
       case HttpTransportType.none:
         break;
       case HttpTransportType.webSockets:
-        return WebSocketTransport(
-            accessTokenFactory: _accessTokenFactory,
-            logging: _logging,
-            logMessageContent: _options.logMessageContent,
-            client: _client);
+        return WebSocketTransport(accessTokenFactory: _accessTokenFactory, logging: _logging, logMessageContent: _options.logMessageContent, client: _client);
       case HttpTransportType.serverSentEvents:
-        return ServerSentEventsTransport(
-            accessTokenFactory: _accessTokenFactory,
-            logMessageContent: _options.logMessageContent,
-            logging: _logging,
-            client: _client);
+        return ServerSentEventsTransport(accessTokenFactory: _accessTokenFactory, logMessageContent: _options.logMessageContent, logging: _logging, client: _client);
       case HttpTransportType.longPolling:
-        return LongPollingTransport(
-            accessTokenFactory: _accessTokenFactory,
-            logMessageContent: _options.logMessageContent,
-            log: _logging,
-            client: _client);
+        return LongPollingTransport(accessTokenFactory: _accessTokenFactory, logMessageContent: _options.logMessageContent, log: _logging, client: _client);
     }
     return null;
   }
@@ -767,9 +720,7 @@ class TransportSendQueue {
       _transportResult = null;
 
       if (_buffer.isNotEmpty) {
-        final data = (_buffer[0] is String)
-            ? _buffer.join('')
-            : TransportSendQueue._concatBuffers(_buffer as List<ByteBuffer?>);
+        final data = (_buffer[0] is String) ? _buffer.join('') : TransportSendQueue._concatBuffers(_buffer as List<ByteBuffer?>);
 
         _buffer.clear();
 
@@ -784,8 +735,7 @@ class TransportSendQueue {
   }
 
   static ByteBuffer _concatBuffers(List<ByteBuffer?> byteBuffers) {
-    final totalLength =
-        byteBuffers.map((b) => b!.lengthInBytes).reduce((a, b) => a + b);
+    final totalLength = byteBuffers.map((b) => b!.lengthInBytes).reduce((a, b) => a + b);
     final result = Uint8List(totalLength);
 
     var offset = 0;

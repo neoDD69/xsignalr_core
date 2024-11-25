@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:signalr_core/src/text_message_format.dart';
+import 'package:xsignalr_core/signalr_core.dart';
 
 class HandshakeRequestMessage {
   HandshakeRequestMessage({
@@ -61,13 +61,10 @@ class HandshakeProtocol {
       // optional content after is additional messages
       final responseLength = separatorIndex + 1;
       messageData = utf8.decode(data.sublist(0, responseLength));
-      remainingData = (data.length > responseLength)
-          ? data.sublist(responseLength, data.length)
-          : null;
+      remainingData = (data.length > responseLength) ? data.sublist(responseLength, data.length) : null;
     } else {
       final textData = data as String;
-      final separatorIndex =
-          textData.indexOf(TextMessageFormat.recordSeparator);
+      final separatorIndex = textData.indexOf(TextMessageFormat.recordSeparator);
       if (separatorIndex == -1) {
         throw Exception('Message is incomplete.');
       }
@@ -76,15 +73,12 @@ class HandshakeProtocol {
       // optional content after is additional messages
       final responseLength = separatorIndex + 1;
       messageData = textData.substring(0, responseLength);
-      remainingData = (textData.length > responseLength)
-          ? textData.substring(responseLength)
-          : null;
+      remainingData = (textData.length > responseLength) ? textData.substring(responseLength) : null;
     }
 
     // At this point we should have just the single handshake message
     final messages = TextMessageFormat.parse(messageData);
-    final response = HandshakeResponseMessageExtensions.fromJson(
-        json.decode(messages[0]) as Map<String, dynamic>);
+    final response = HandshakeResponseMessageExtensions.fromJson(json.decode(messages[0]) as Map<String, dynamic>);
 
     // if (response.type) {
     //   throw new Error("Expected a handshake response from the server.");

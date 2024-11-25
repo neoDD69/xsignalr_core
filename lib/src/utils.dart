@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart';
-import 'package:signalr_core/src/logger.dart';
+import '../../signalr_core.dart';
 
 typedef OnReceive = void Function(dynamic data);
 typedef OnClose = void Function(Exception? error);
@@ -41,15 +41,7 @@ String formatByteBuffer(ByteBuffer data) {
   return str.substring(0, str.length - 1);
 }
 
-Future<void> sendMessage(
-    Logging? log,
-    String transportName,
-    BaseClient? client,
-    String? url,
-    AccessTokenFactory? accessTokenFactory,
-    dynamic content,
-    bool? logMessageContent,
-    bool? withCredentials) async {
+Future<void> sendMessage(Logging? log, String transportName, BaseClient? client, String? url, AccessTokenFactory? accessTokenFactory, dynamic content, bool? logMessageContent, bool? withCredentials) async {
   var headers = <String, String>{};
   if (accessTokenFactory != null) {
     final token = await accessTokenFactory();
@@ -69,11 +61,8 @@ Future<void> sendMessage(
     '${getDataDetail(content, logMessageContent)}.',
   );
 
-  final encoding = (content is ByteBuffer)
-      ? Encoding.getByName('')
-      : Encoding.getByName('UTF-8');
-  final response = await client?.post(Uri.parse(url ?? ''),
-      headers: headers, body: content, encoding: encoding);
+  final encoding = (content is ByteBuffer) ? Encoding.getByName('') : Encoding.getByName('UTF-8');
+  final response = await client?.post(Uri.parse(url ?? ''), headers: headers, body: content, encoding: encoding);
 
   log?.call(
     LogLevel.trace,

@@ -1,10 +1,6 @@
 import 'dart:convert';
 
-import 'package:signalr_core/src/hub_protocol.dart';
-import 'package:signalr_core/src/logger.dart';
-import 'package:signalr_core/src/text_message_format.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/utils.dart';
+import '../../signalr_core.dart';
 
 const String jsonHubProtocolName = 'json';
 
@@ -24,8 +20,7 @@ class JsonHubProtocol implements HubProtocol {
   List<HubMessage?> parseMessages(dynamic input, Logging? logging) {
     // Only JsonContent is allowed.
     if (!(input is String)) {
-      throw Exception(
-          'Invalid input for JSON hub protocol. Expected a string.');
+      throw Exception('Invalid input for JSON hub protocol. Expected a string.');
     }
 
     final jsonInput = input;
@@ -40,8 +35,7 @@ class JsonHubProtocol implements HubProtocol {
     final messages = TextMessageFormat.parse(jsonInput);
     for (var message in messages) {
       final jsonData = json.decode(message);
-      final messageType =
-          _getMessageTypeFromJson(jsonData as Map<String, dynamic>);
+      final messageType = _getMessageTypeFromJson(jsonData as Map<String, dynamic>);
       HubMessage? parsedMessage;
 
       switch (messageType) {
@@ -67,11 +61,7 @@ class JsonHubProtocol implements HubProtocol {
           break;
         default:
           // Future protocol changes can add message types, old clients can ignore them
-          logging!(
-              LogLevel.information,
-              'Unknown message type \'' +
-                  messageType.toString() +
-                  '\' ignored.');
+          logging!(LogLevel.information, 'Unknown message type \'' + messageType.toString() + '\' ignored.');
           continue;
       }
       hubMessages.add(parsedMessage);
@@ -87,26 +77,19 @@ class JsonHubProtocol implements HubProtocol {
       case MessageType.undefined:
         break;
       case MessageType.invocation:
-        return TextMessageFormat.write(
-            json.encode((message as InvocationMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as InvocationMessage).toJson()));
       case MessageType.streamItem:
-        return TextMessageFormat.write(
-            json.encode((message as StreamItemMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as StreamItemMessage).toJson()));
       case MessageType.completion:
-        return TextMessageFormat.write(
-            json.encode((message as CompletionMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as CompletionMessage).toJson()));
       case MessageType.streamInvocation:
-        return TextMessageFormat.write(
-            json.encode((message as StreamInvocationMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as StreamInvocationMessage).toJson()));
       case MessageType.cancelInvocation:
-        return TextMessageFormat.write(
-            json.encode((message as CancelInvocationMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as CancelInvocationMessage).toJson()));
       case MessageType.ping:
-        return TextMessageFormat.write(
-            json.encode((message as PingMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as PingMessage).toJson()));
       case MessageType.close:
-        return TextMessageFormat.write(
-            json.encode((message as CloseMessage).toJson()));
+        return TextMessageFormat.write(json.encode((message as CloseMessage).toJson()));
       default:
         break;
     }
@@ -137,18 +120,15 @@ class JsonHubProtocol implements HubProtocol {
   }
 
   void _isInvocationMessage(InvocationMessage message) {
-    _assertNotEmptyString(
-        message.target, 'Invalid payload for Invocation message.');
+    _assertNotEmptyString(message.target, 'Invalid payload for Invocation message.');
 
     if (message.invocationId != null) {
-      _assertNotEmptyString(
-          message.target, 'Invalid payload for Invocation message.');
+      _assertNotEmptyString(message.target, 'Invalid payload for Invocation message.');
     }
   }
 
   void _isStreamItemMessage(StreamItemMessage message) {
-    _assertNotEmptyString(
-        message.invocationId, 'Invalid payload for StreamItem message.');
+    _assertNotEmptyString(message.invocationId, 'Invalid payload for StreamItem message.');
 
     if (message.item == null) {
       throw Exception('Invalid payload for StreamItem message.');
@@ -157,12 +137,10 @@ class JsonHubProtocol implements HubProtocol {
 
   void _isCompletionMessage(CompletionMessage message) {
     if ((message.result == null) && (message.error != null)) {
-      _assertNotEmptyString(
-          message.error, 'Invalid payload for Completion message.');
+      _assertNotEmptyString(message.error, 'Invalid payload for Completion message.');
     }
 
-    _assertNotEmptyString(
-        message.invocationId, 'Invalid payload for Completion message.');
+    _assertNotEmptyString(message.invocationId, 'Invalid payload for Completion message.');
   }
 
   void _assertNotEmptyString(dynamic value, String errorMessage) {
@@ -184,25 +162,13 @@ extension InvocationMessageExtensions on InvocationMessage {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'type': type?.value,
-      if (invocationId != null) 'invocationId': invocationId,
-      'target': target,
-      'arguments': arguments ?? [],
-      if (streamIds != null) 'streamIds': streamIds
-    };
+    return {'type': type?.value, if (invocationId != null) 'invocationId': invocationId, 'target': target, 'arguments': arguments ?? [], if (streamIds != null) 'streamIds': streamIds};
   }
 }
 
 extension StreamInvocationMessageExtensions on StreamInvocationMessage {
   Map<String, dynamic> toJson() {
-    return {
-      'type': type?.value,
-      'invocationId': invocationId,
-      'target': target,
-      'arguments': arguments,
-      'streamIds': streamIds
-    };
+    return {'type': type?.value, 'invocationId': invocationId, 'target': target, 'arguments': arguments, 'streamIds': streamIds};
   }
 }
 

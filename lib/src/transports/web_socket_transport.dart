@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:http/http.dart';
-import 'package:signalr_core/src/logger.dart';
-import 'package:signalr_core/src/transport.dart';
-import 'package:signalr_core/src/utils.dart';
+// import 'package:signalr_core/src/logger.dart';
+// import 'package:signalr_core/src/transport.dart';
+// import 'package:signalr_core/src/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../signalr_core.dart';
 import 'web_socket_channel_api.dart'
     // ignore: uri_does_not_exist
     if (dart.library.html) 'web_socket_channel_html.dart'
@@ -51,8 +52,7 @@ class WebSocketTransport implements Transport {
       final token = await _accessTokenFactory();
       if (token!.isNotEmpty) {
         final encodedToken = Uri.encodeComponent(token);
-        url =
-            '${url!}${url.contains('?') ? '&' : '?'}access_token=$encodedToken';
+        url = '${url!}${url.contains('?') ? '&' : '?'}access_token=$encodedToken';
       }
     }
 
@@ -68,8 +68,7 @@ class WebSocketTransport implements Transport {
 
     _streamSubscription = _channel?.stream.listen((data) {
       var dataDetail = getDataDetail(data, _logMessageContent);
-      _logging(
-          LogLevel.trace, '(WebSockets transport) data received. $dataDetail');
+      _logging(LogLevel.trace, '(WebSockets transport) data received. $dataDetail');
       if (onreceive != null) {
         try {
           onreceive!(data);
@@ -79,8 +78,7 @@ class WebSocketTransport implements Transport {
         }
       }
     }, onError: (e) {
-      _logging(LogLevel.error,
-          '(WebSockets transport) socket error: ${e.toString()}}');
+      _logging(LogLevel.error, '(WebSockets transport) socket error: ${e.toString()}}');
     }, onDone: () {
       if (opened == true) {
         _close(null);
