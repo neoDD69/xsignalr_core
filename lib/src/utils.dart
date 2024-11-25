@@ -9,7 +9,7 @@ typedef OnClose = void Function(Exception? error);
 typedef AccessTokenFactory = Future<String?> Function();
 typedef Logging = void Function(LogLevel level, String message);
 
-const String version = '0.0.0-DEV_BUILD';
+const String myVersion = '0.0.0-DEV_BUILD';
 
 String getDataDetail(dynamic data, bool? includeContent) {
   var detail = '';
@@ -76,7 +76,7 @@ Future<void> sendMessage(Logging? log, String transportName, BaseClient? client,
   return (
     userAgentHeaderName,
     _constructUserAgent(
-      version,
+      myVersion,
       getOsName(),
       getRuntime(),
       getRuntimeVersion(),

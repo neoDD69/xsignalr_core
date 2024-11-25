@@ -185,7 +185,7 @@ class HubConnection {
     try {
       final handshakeRequest = HandshakeRequestMessage(
         protocol: _protocol.name,
-        version: _protocol.version,
+        versionInt: _protocol.version,
       );
 
       _logger!(LogLevel.debug, 'Sending handshake request.');

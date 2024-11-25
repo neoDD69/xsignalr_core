@@ -6,11 +6,11 @@ import 'package:xsignalr_core/signalr_core.dart';
 class HandshakeRequestMessage {
   HandshakeRequestMessage({
     this.protocol,
-    this.version,
+    this.versionInt,
   });
 
   final String? protocol;
-  final int? version;
+  final int? versionInt;
 }
 
 class HandshakeResponseMessage {
@@ -26,7 +26,7 @@ class HandshakeResponseMessage {
 extension on HandshakeRequestMessage {
   Map<String, dynamic> toJson() => {
         'protocol': protocol,
-        'version': version,
+        'version': versionInt,
       };
 }
 
