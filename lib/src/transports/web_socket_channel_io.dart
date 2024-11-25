@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -5,33 +6,24 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/io.dart'; // Ensure compatibility with v3.x
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 Future<WebSocketChannel> connect(
   Uri uri, {
   required BaseClient client,
 }) async {
-  var random = Random();
+  final random = Random();
 
-  var nonceData = Uint8List(16);
+  final nonceData = Uint8List(16);
   for (var i = 0; i < 16; i++) {
     nonceData[i] = random.nextInt(256);
   }
-  var nonce = base64.encode(nonceData);
+  final nonce = base64.encode(nonceData);
 
-  WebSocket ws;
+  final wsUri = uri.replace(scheme: uri.scheme == 'wss' ? 'https' : 'http');
 
-  var wsUri = Uri(
-      scheme: uri.scheme == 'wss' ? 'https' : 'http',
-      userInfo: uri.userInfo,
-      host: uri.host,
-      port: uri.port,
-      path: uri.path,
-      query: uri.query,
-      fragment: uri.fragment);
-
-  var request = Request('GET', wsUri)
+  final request = Request('GET', wsUri)
     ..headers.addAll({
       'Connection': 'Upgrade',
       'Upgrade': 'websocket',
@@ -40,13 +32,13 @@ Future<WebSocketChannel> connect(
       'Sec-WebSocket-Version': '13',
     });
 
-  var response = await client.send(request);
-  var socket = await (response as IOStreamedResponse).detachSocket();
+  final response = await client.send(request);
+  final socket = await (response as IOStreamedResponse).detachSocket();
 
-  ws = WebSocket.fromUpgradedSocket(
+  final ws = WebSocket.fromUpgradedSocket(
     socket,
     serverSide: false,
   );
 
-  return IOWebSocketChannel(ws);
+  return IOWebSocketChannel(ws); // Updated for clarity and explicit v3.x compliance
 }

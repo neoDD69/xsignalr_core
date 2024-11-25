@@ -1,16 +1,12 @@
+
 import 'dart:async';
 
 import 'package:http/http.dart';
-// import 'package:signalr_core/src/logger.dart';
-// import 'package:signalr_core/src/transport.dart';
-// import 'package:signalr_core/src/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../signalr_core.dart';
 import 'web_socket_channel_api.dart'
-    // ignore: uri_does_not_exist
     if (dart.library.html) 'web_socket_channel_html.dart'
-    // ignore: uri_does_not_exist
     if (dart.library.io) 'web_socket_channel_io.dart' as platform;
 
 class WebSocketTransport implements Transport {
@@ -46,98 +42,60 @@ class WebSocketTransport implements Transport {
     assert(url != null);
     assert(transferFormat != null);
 
-    _logging!(LogLevel.trace, '(WebSockets transport) Connecting.');
+    _logging?.call(LogLevel.trace, '(WebSockets transport) Connecting.');
 
     if (_accessTokenFactory != null) {
-      final token = await _accessTokenFactory();
+      final token = await _accessTokenFactory!();
       if (token!.isNotEmpty) {
         final encodedToken = Uri.encodeComponent(token);
         url = '${url!}${url.contains('?') ? '&' : '?'}access_token=$encodedToken';
       }
     }
 
-    final connectFuture = Completer<void>();
-    var opened = false;
-
     url = url!.replaceFirst(RegExp(r'^http'), 'ws');
 
     _channel = await platform.connect(Uri.parse(url), client: _client!);
 
-    _logging(LogLevel.information, 'WebSocket connected to $url.');
-    opened = true;
+    _logging?.call(LogLevel.information, 'WebSocket connected to $url.');
 
-    _streamSubscription = _channel?.stream.listen((data) {
-      var dataDetail = getDataDetail(data, _logMessageContent);
-      _logging(LogLevel.trace, '(WebSockets transport) data received. $dataDetail');
-      if (onreceive != null) {
-        try {
-          onreceive!(data);
-        } on Exception catch (e1) {
-          _close(e1);
-          return;
-        }
-      }
-    }, onError: (e) {
-      _logging(LogLevel.error, '(WebSockets transport) socket error: ${e.toString()}}');
-    }, onDone: () {
-      if (opened == true) {
+    _streamSubscription = _channel?.stream.listen(
+      (data) {
+        final dataDetail = getDataDetail(data, _logMessageContent);
+        _logging?.call(LogLevel.trace, '(WebSockets transport) data received. $dataDetail');
+        onreceive?.call(data);
+      },
+      onError: (error) {
+        _logging?.call(LogLevel.error, '(WebSockets transport) socket error: ${error.toString()}');
+      },
+      onDone: () {
         _close(null);
-      } else {}
-    }, cancelOnError: false);
-
-    return connectFuture.complete();
+      },
+    );
   }
 
   @override
-  Future<void> send(dynamic data) {
-    if ((_channel == null) || (_channel?.closeCode != null)) {
-      return Future.error(Exception('WebSocket is not in the OPEN state'));
+  Future<void> send(dynamic data) async {
+    if (_channel == null || _channel!.closeCode != null) {
+      throw Exception('WebSocket is not in the OPEN state');
     }
-
-    _logging!(
+    _logging?.call(
       LogLevel.trace,
-      '(WebSockets transport) sending data. '
-      '${getDataDetail(data, _logMessageContent)}.',
+      '(WebSockets transport) sending data. ${getDataDetail(data, _logMessageContent)}.',
     );
     _channel!.sink.add(data);
-    return Future.value();
   }
 
   @override
-  Future<void> stop() {
-    if (_channel != null) {
-      _close(null);
-    }
-    return Future.value();
+  Future<void> stop() async {
+    _close(null);
   }
 
   void _close(Exception? error) {
-    var closeCode = 0;
-    String? closeReason;
-    if (_channel != null) {
-      closeCode = _channel!.closeCode ?? 0;
-      closeReason = _channel!.closeReason;
-      _streamSubscription!.cancel();
-      _streamSubscription = null;
-      _channel!.sink.close();
-      _channel = null;
-    }
+    _streamSubscription?.cancel();
+    _channel?.sink.close();
+    _channel = null;
 
-    _logging!(LogLevel.trace, '(WebSockets transport) socket closed.');
-    if (onclose != null) {
-      if (error != null) {
-        onclose!(error);
-      } else {
-        if (closeCode != 0 && closeCode != 1000) {
-          onclose!(
-            Exception(
-              'WebSocket closed with status code: '
-              '$closeCode ($closeReason).',
-            ),
-          );
-        }
-        onclose!(null);
-      }
-    }
+    _logging?.call(LogLevel.trace, '(WebSockets transport) socket closed.');
+    onclose?.call(error);
   }
 }
